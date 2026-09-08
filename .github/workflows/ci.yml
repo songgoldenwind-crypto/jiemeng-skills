@@ -17,4 +17,5 @@ jobs:
           python-version: '3.12'
       - run: python3 scripts/validate_repo.py
       - run: python3 skills/dream-interpretation/scripts/test_search.py
+      - run: python3 skills/dream-interpretation/scripts/test_menglin.py
       - run: python3 tests/test_distribution.py

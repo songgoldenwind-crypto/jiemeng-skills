@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "source_key": "menglin-xuanjie-1993-user-pdf",
+  "title": "梦林玄解",
+  "attribution_from_filename": "（晋）葛洪著；（明）陈士元增删；叶明鉴编译",
+  "edition_observed_in_scan": {
+    "publisher": "朝华出版社",
+    "edition": "1993年1月第1版",
+    "printing": "1993年5月第3次印刷"
+  },
+  "pdf": {
+    "sha256": "0be41e3af522be1546d17c2fba3757a8c5ad73cc9aa5dd26fd7371bf5971be2e",
+    "bytes": 8857060,
+    "pages": 369,
+    "has_usable_text_layer": false,
+    "content_pdf_page_start": 9,
+    "book_page_offset": 8
+  },
+  "distribution": {
+    "source_pdf_bundled": false,
+    "full_ocr_bundled": false,
+    "local_private_index_supported": true
+  }
+}

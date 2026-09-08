@@ -1,6 +1,6 @@
 ---
 name: dream-interpretation
-description: 用于解读梦境、查询传统梦兆、综合多个梦象或分析反复梦与噩梦。以梦中动作、对象状态和情境作精确匹配，并把古籍条目、语境推断与现实建议分开；不用于六爻、八字、医疗诊断或把梦境当作事实预言。
+description: 用于解读梦境、查询传统梦兆、检索《梦林玄解》本地索引、综合多个梦象或分析反复梦与噩梦。以梦中动作、对象状态和情境作精确匹配，并把古籍条目、OCR、语境推断与现实建议分开；不用于六爻、八字、医疗诊断或把梦境当作事实预言。
 ---
 
 # 解梦
@@ -22,7 +22,9 @@ description: 用于解读梦境、查询传统梦兆、综合多个梦象或分�
 
 ## 检索传统条目
 
-实际解梦先读 [01-interpretation-method.md](references/01-interpretation-method.md)。不要一次加载整部辞典；先在本 Skill 目录运行：
+实际解梦先读 [01-interpretation-method.md](references/01-interpretation-method.md)。涉及完整事件链、状态反转、梦者与他人的关系，或使用《梦林玄解》时，再读 [03-menglin-method.md](references/03-menglin-method.md)。不要一次加载整部辞典或整书 OCR。
+
+先查随 Skill 打包的古典辞典：
 
 ```bash
 python3 scripts/search_dreams.py --query "梦境的核心场景" --max-results 8
@@ -30,16 +32,28 @@ python3 scripts/search_dreams.py --query "梦境的核心场景" --max-results 8
 
 可用 `--category` 限定门类，用 `--list-categories` 查看全部门类。脚本不可用时，再用 `rg` 在 [classical-dictionary.txt](references/classical-dictionary.txt) 中检索核心名词和动作。
 
+然后检查《梦林玄解》私有本地索引：
+
+```bash
+python3 scripts/search_menglin.py --status
+python3 scripts/search_menglin.py --query "对象 + 动作 + 状态" --max-results 6
+```
+
+若索引存在，完整梦境默认同时查两个资料通道；简单符号查询可在内置辞典已有精确条目时停止扩查。若本地索引缺失，不得声称已搜索《梦林玄解》；只在用户持有该 PDF 时按 [05-source-registry.md](references/05-source-registry.md) 运行 `build_menglin_index.py`。部类和页码路由见 [04-menglin-catalog.md](references/04-menglin-catalog.md)。
+
 检索结果按以下证据次序使用：
 
 1. 对象、动作、状态、方向与结果都吻合的原条目；
 2. 对象和关键动作吻合、但少一个限定条件的近似条目；
 3. 只有同类对象或相似场景的类比；
-4. 辞典没有对应时，明确写“无直接条目”，只做语境分析。
+4. 只在《梦林玄解》OCR 中定位的近似内容；
+5. 两个资料通道都无对应时，明确写“无直接条目”，只做语境分析。
 
 具体动作与状态优先于孤立名词。同一对象的清浊、完整破损、进入离开、生死和梦者角色可能对应相反条目，不按“吉词多还是凶词多”投票。多个梦象按梦里的主事件链组合，先判断哪个情节推动了结局，其余只作支持或限制。
 
-检索结果带 `source_warning`，或原句明显缺字、粘连、古今词义不明时，读 [02-source-notes.md](references/02-source-notes.md)。不得凭印象补字后冒充原文。
+检索结果带 `source_warning`，或原句明显缺字、粘连、古今词义不明时，读 [02-source-notes.md](references/02-source-notes.md)。《梦林玄解》OCR 命中必须返回 PDF 页和书页；决定结论的原句先看页图。未核对时只能概括并标注“OCR 定位”，不加引号。任何来源都不得凭印象补字后冒充原文。
+
+两个资料通道出现相反条目时，分别报告来源与限定条件，不按数量投票。文本重复不算独立佐证；具体处理见 [03-menglin-method.md](references/03-menglin-method.md)。
 
 ## 解释边界
 
@@ -49,7 +63,7 @@ python3 scripts/search_dreams.py --query "梦境的核心场景" --max-results 8
 - **语境推断：** 根据梦的情节、情绪、个人联想和近期经历提出一至两个合理解释，说明推断依据。
 - **现实事实：** 只有用户提供或可独立确认的事实才能这样表述。梦本身不能证明疾病、死亡、怀孕、出轨、犯罪、官司、发财或他人的真实想法。
 
-古籍没有应期体系，不从条目擅自推出某日、某月必然应验。古代的官位、妻妾、奴婢、贵子等表达可按 [02-source-notes.md](references/02-source-notes.md) 作现代语境说明，但不要偷偷改写为确定的现代事件。
+内置辞典条目未提供可校验的应期体系；《梦林玄解》附录虽记有时令占法，本 Skill 也没有验证或实施该换算模型。不从条目擅自推出某日、某月必然应验。古代的官位、妻妾、奴婢、贵子等表达可按 [02-source-notes.md](references/02-source-notes.md) 作现代语境说明，但不要偷偷改写为确定的现代事件。
 
 反复梦或噩梦首先结合压力、睡眠、近期刺激和个人经历解释。若梦已持续影响睡眠或日常功能，可以建议寻求合适的专业支持；不得仅凭梦境作精神或身体疾病诊断。梦里出现自伤、杀害不等于现实意图；如果用户同时表达清醒时的现实伤害意图，应退出普通解梦流程并优先处理现实安全。
 
@@ -58,7 +72,7 @@ python3 scripts/search_dreams.py --query "梦境的核心场景" --max-results 8
 默认简洁回答：
 
 1. **主判断：** 一至三句说明这个梦更接近哪类主题，以及能判断到什么程度。
-2. **传统对应：** 列最贴合的一至三条，分别标注“精确匹配”“近似匹配”或“无直接条目”；近似处必须说清差异。
+2. **传统对应：** 列最贴合的一至三条，分别标注“精确匹配”“近似匹配”“OCR 定位”或“无直接条目”；近似处必须说清差异。标出来源；《梦林玄解》同时标 PDF 页／书页。
 3. **综合解释：** 沿梦的主事件链解释，不把每个名词各讲一个故事。
 4. **需要留意：** 仅在确有帮助时给一个现实观察点或行动建议。
 

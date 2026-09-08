@@ -13,6 +13,7 @@ SKILL_NAME = "dream-interpretation"
 SKILL_ROOT = REPO_ROOT / "skills" / SKILL_NAME
 SKILL_FILE = SKILL_ROOT / "SKILL.md"
 DATA_FILE = SKILL_ROOT / "references" / "classical-dictionary.txt"
+MENGLIN_SOURCE = SKILL_ROOT / "references" / "menglin-xuanjie-source.json"
 CATEGORY_RE = re.compile(r"^[一二三四五六七八九十]+、")
 
 
@@ -46,6 +47,18 @@ def main() -> None:
     )
     assert categories == 27
     assert segments == 951
+    menglin = json.loads(MENGLIN_SOURCE.read_text(encoding="utf-8"))
+    assert menglin["source_key"] == "menglin-xuanjie-1993-user-pdf"
+    assert menglin["pdf"] == {
+        "sha256": "0be41e3af522be1546d17c2fba3757a8c5ad73cc9aa5dd26fd7371bf5971be2e",
+        "bytes": 8857060,
+        "pages": 369,
+        "has_usable_text_layer": False,
+        "content_pdf_page_start": 9,
+        "book_page_offset": 8,
+    }
+    assert not list(SKILL_ROOT.rglob("pages.jsonl")), "公开 Skill 不应包含整书 OCR 索引"
+    assert not list(SKILL_ROOT.rglob("page-*.txt")), "公开 Skill 不应包含逐页 OCR"
     assert (REPO_ROOT / "LICENSE").read_text(encoding="utf-8").startswith("MIT License\n")
 
     print(json.dumps({
@@ -54,6 +67,8 @@ def main() -> None:
         "checked_links": checked_links,
         "categories": categories,
         "segments": segments,
+        "menglin_pages": menglin["pdf"]["pages"],
+        "full_ocr_bundled": False,
         "license": "MIT",
     }, ensure_ascii=False))
 

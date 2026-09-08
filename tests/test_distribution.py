@@ -73,6 +73,12 @@ class PackagingTests(unittest.TestCase):
                 names = archive.namelist()
                 self.assertIn("SKILL.md", names)
                 self.assertIn("LICENSE", names)
+                self.assertIn("scripts/build_menglin_index.py", names)
+                self.assertIn("scripts/search_menglin.py", names)
+                self.assertIn("references/03-menglin-method.md", names)
+                self.assertIn("references/menglin-xuanjie-source.json", names)
+                self.assertNotIn("pages.jsonl", names)
+                self.assertFalse(any(name.startswith("raw/page-") for name in names))
                 self.assertNotIn(f"{SKILL_NAME}/SKILL.md", names)
                 self.assertTrue(archive.read("LICENSE").startswith(b"MIT License\n"))
 

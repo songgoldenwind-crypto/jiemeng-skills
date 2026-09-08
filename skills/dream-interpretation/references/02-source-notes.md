@@ -1,4 +1,6 @@
-# 原始资料与文本边界
+# 内置辞典的原始资料与文本边界
+
+本文只登记随 Skill 打包的 `classical-dictionary.txt`。《梦林玄解》扫描本及其本地 OCR 的登记与边界见 [05-source-registry.md](05-source-registry.md)。
 
 ## 收录范围
 
