@@ -26,6 +26,7 @@ def skill_files() -> list[Path]:
         for path in SKILL_ROOT.rglob("*")
         if path.is_file()
         and path.name != ".DS_Store"
+        and ".private" not in path.relative_to(SKILL_ROOT).parts
         and "__pycache__" not in path.parts
         and path.suffix != ".pyc"
     )

@@ -19,6 +19,8 @@
   "distribution": {
     "source_pdf_bundled": false,
     "full_ocr_bundled": false,
-    "local_private_index_supported": true
+    "legacy_local_private_index_import_supported": true,
+    "private_in_skill_complete_knowledge_supported": true,
+    "runtime_external_index_required": false
   }
 }

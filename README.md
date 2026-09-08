@@ -1,11 +1,11 @@
 # 解梦 Agent Skill
 
-一个面向 Codex 及兼容 Agent Skills 客户端的中文解梦 Skill。它从梦中对象、动作、状态、方向和结果检索传统梦兆，可选扩查用户持有的《梦林玄解》扫描本，再结合梦境情节与现实语境作审慎解释。
+一个面向 Codex 及兼容 Agent Skills 客户端的中文解梦 Skill。它从梦中对象、动作、状态、方向和结果检索传统梦兆，可把用户合法持有的完整扩展资料内化到本机已安装的 Skill，再结合梦境情节与现实语境作审慎解释。
 
 ## 特点
 
 - 内置 27 个传统梦象门类、951 个原始文本片段。
-- 支持将用户持有的 369 页《梦林玄解》建成本机私有 OCR 索引。
+- 支持将用户持有的完整资料内化为 Skill 内部私有知识，运行时无外部文件依赖。
 - 纳入全梦迁变、明暗/完损反转、梦者处境和信息不足时降级等方法。
 - 区分精确匹配、近似匹配、类比和无直接条目。
 - 多个梦象沿主事件链解释，不按吉凶条目数量投票。
@@ -42,7 +42,7 @@ python3 scripts/install.py --agent all --scope user
 python3 scripts/install.py --agent custom --destination /path/to/skills
 ```
 
-已存在同名目录时，安装器会拒绝覆盖；确认替换时显式添加 `--force`。
+已存在同名目录时，安装器会拒绝覆盖；确认替换时显式添加 `--force`。已内化到 `references/.private/` 的私有完整知识会在更新时自动保留。
 
 ## 使用
 
@@ -73,27 +73,33 @@ python3 skills/dream-interpretation/scripts/search_dreams.py \
 
 输出包含门类、原条目、原文件逻辑行号、匹配范围和文本质量警告。使用 `--list-categories` 查看全部门类，使用 `--category` 限定检索范围。
 
-## 《梦林玄解》本地索引
+## 本机私有完整版
 
-仓库不分发原 PDF 或整书 OCR。如果你合法持有该书的扫描本，可以在本机一次性建立可恢复的 OCR 索引：
+公开仓库不分发原文件或完整正文。如果本机已有上一版建立的完整私有索引，可在已安装的 Codex Skill 中一次性内化：
 
 ```bash
-python3 skills/dream-interpretation/scripts/build_menglin_index.py \
-  "/path/to/梦林玄解.pdf"
+python3 ~/.codex/skills/dream-interpretation/scripts/internalize_menglin_index.py
 ```
 
-默认索引位于 `~/.local/share/jiemeng-skills/menglin-xuanjie/`。建立时需要 Poppler 的 `pdfinfo`/`pdftoppm`、Tesseract 及 `chi_sim` 语言包。脚本会校验已登记扫描件的 SHA-256，中断后重跑会继续未完成页。
+尚未建立旧索引时，也可以从合法持有的资料直接构建到已安装 Skill 内：
+
+```bash
+python3 ~/.codex/skills/dream-interpretation/scripts/build_menglin_index.py \
+  "/path/to/your-file.pdf"
+```
+
+构建时需要 Poppler 的 `pdfinfo`/`pdftoppm`、Tesseract 及 `chi_sim` 语言包。完成后的正文知识位于该 Skill 内的 `references/.private/extended-corpus/`；原始资料和 Skill 外部索引都不再是运行时依赖。
 
 检查状态或检索：
 
 ```bash
-python3 skills/dream-interpretation/scripts/search_menglin.py --status
-python3 skills/dream-interpretation/scripts/search_menglin.py \
+python3 ~/.codex/skills/dream-interpretation/scripts/search_menglin.py --status
+python3 ~/.codex/skills/dream-interpretation/scripts/search_menglin.py \
   --query "水浑浊后变清" \
   --max-results 6
 ```
 
-检索器只返回有限长度的 OCR 片段和 PDF/书页定位。OCR 会错字，决定解释方向的原句应回看页图。
+状态检查会校验内部知识的数量和内容摘要。检索器只返回匹配强度和有限长度的内容片段，不返回作者、书名、页码、文件或识别过程信息。解梦回答同样禁止显示这些内部信息。
 
 ## 仓库结构
 
@@ -126,7 +132,7 @@ python3 scripts/package_skill.py
 
 ## 资料说明
 
-内置辞典来自传统梦兆抄本的机械整理版本。《梦林玄解》通道只公开来源指纹、检索工具与原创方法提炼，完整 OCR 仅留在用户本机。仓库不宣称传统梦兆具有经过验证的预测能力；它们作为民俗材料参与解释。仓库中的代码、Skill 指令、检索逻辑和原创说明按 MIT License 开源。
+内置辞典来自传统梦兆抄本的机械整理版本。完整扩展正文只存在于用户本机已安装 Skill 的私有目录，不进入公开仓库或公开安装包。仓库不宣称传统梦兆具有经过验证的预测能力；它们作为民俗材料参与解释。仓库中的代码、Skill 指令、检索逻辑和原创说明按 MIT License 开源。
 
 ## License
 

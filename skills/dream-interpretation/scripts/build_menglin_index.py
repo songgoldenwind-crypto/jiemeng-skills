@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a private, resumable OCR index from the user's Menglin Xuanjie PDF."""
+"""Build complete private knowledge directly inside the current skill."""
 
 from __future__ import annotations
 
@@ -15,20 +15,19 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timezone
 from pathlib import Path
 
+from internalize_menglin_index import LAST_BOOK_PAGE, clean_text
+
 
 SOURCE_KEY = "menglin-xuanjie-1993-user-pdf"
 EXPECTED_SHA256 = "0be41e3af522be1546d17c2fba3757a8c5ad73cc9aa5dd26fd7371bf5971be2e"
 EXPECTED_PAGES = 369
-CONTENT_PDF_PAGE_START = 9
-BOOK_PAGE_OFFSET = 8
 CJK_SPACE_RE = re.compile(r"(?<=[\u3400-\u9fff])[ \t]+(?=[\u3400-\u9fff])")
 PAGE_COUNT_RE = re.compile(r"^Pages:\s+(\d+)\s*$", re.MULTILINE)
 
 
 def default_output() -> Path:
-    data_home = os.environ.get("XDG_DATA_HOME")
-    root = Path(data_home).expanduser() if data_home else Path.home() / ".local" / "share"
-    return root / "jiemeng-skills" / "menglin-xuanjie"
+    skill_root = Path(__file__).resolve().parents[1]
+    return skill_root / "references/.private/extended-corpus"
 
 
 def sha256_file(path: Path) -> str:
@@ -129,27 +128,27 @@ def ocr_page(
     return page, target.stat().st_size
 
 
-def build_index(raw_directory: Path, output: Path, page_count: int) -> int:
-    index_path = output / "pages.jsonl"
-    temporary = index_path.with_suffix(".jsonl.tmp")
-    indexed = 0
+def build_corpus(raw_directory: Path, output: Path, page_count: int) -> tuple[int, str]:
+    corpus_path = output / "corpus.jsonl"
+    temporary = corpus_path.with_suffix(".jsonl.tmp")
+    chunk_count = 0
     with temporary.open("w", encoding="utf-8", newline="\n") as handle:
-        for page in range(1, page_count + 1):
+        for page in range(1, min(page_count, LAST_BOOK_PAGE) + 1):
             source = raw_directory / f"page-{page:04d}.txt"
             if not source.is_file():
                 continue
-            display = normalize_display(source.read_text(encoding="utf-8"))
+            display = clean_text(normalize_display(source.read_text(encoding="utf-8")))
+            if not display:
+                continue
+            chunk_count += 1
             record = {
-                "source_key": SOURCE_KEY,
-                "pdf_page": page,
-                "book_page": page - BOOK_PAGE_OFFSET if page >= CONTENT_PDF_PAGE_START else None,
+                "chunk_id": f"knowledge-{chunk_count:04d}",
                 "text": display,
                 "search_text": compact_search_text(display),
             }
             handle.write(json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n")
-            indexed += 1
-    temporary.replace(index_path)
-    return indexed
+    temporary.replace(corpus_path)
+    return chunk_count, sha256_file(corpus_path)
 
 
 def parse_args() -> argparse.Namespace:
@@ -207,8 +206,7 @@ def main() -> None:
         "language": args.language,
         "psm": args.psm,
         "tesseract_version": tess_version,
-        "content_pdf_page_start": CONTENT_PDF_PAGE_START,
-        "book_page_offset": BOOK_PAGE_OFFSET,
+        "private_knowledge_last_source_page": LAST_BOOK_PAGE,
     }
 
     output.mkdir(parents=True, exist_ok=True)
@@ -262,18 +260,29 @@ def main() -> None:
         write_json(state_path, {**config, "status": "interrupted", "completed_pages": completed})
         raise SystemExit(str(error)) from error
 
-    indexed_pages = build_index(raw_directory, output, page_count)
-    manifest = {
-        **config,
-        "status": "complete" if indexed_pages == page_count else "incomplete",
-        "indexed_pages": indexed_pages,
-        "created_utc": datetime.now(timezone.utc).isoformat(),
-        "ocr_notice": "Machine OCR for search only; verify decisive wording against the PDF page image.",
-        "distribution": "private local derivative; not bundled in the public skill",
+    chunk_count, content_sha256 = build_corpus(raw_directory, output, page_count)
+    private_manifest = {
+        "schema_version": 1,
+        "status": "ready",
+        "scope": "complete_private_knowledge",
+        "chunk_count": chunk_count,
+        "content_sha256": content_sha256,
     }
-    write_json(output / "manifest.json", manifest)
-    write_json(state_path, manifest)
-    print(f"indexed_pages={indexed_pages} index={output / 'pages.jsonl'}", flush=True)
+    build_receipt = {
+        **config,
+        "status": "complete" if completed == page_count else "incomplete",
+        "indexed_pages": completed,
+        "chunk_count": chunk_count,
+        "content_sha256": content_sha256,
+        "created_utc": datetime.now(timezone.utc).isoformat(),
+        "distribution": "private in-skill knowledge; excluded from public packages",
+    }
+    write_json(output / "manifest.json", private_manifest)
+    write_json(state_path, build_receipt)
+    print(
+        f"knowledge=internalized integrity=verified chunks={chunk_count}",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

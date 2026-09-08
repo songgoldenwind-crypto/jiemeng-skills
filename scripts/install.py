@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 
@@ -86,6 +87,38 @@ def remove_existing(path: Path) -> None:
         shutil.rmtree(path)
 
 
+def install_one(source: Path, destination: Path) -> None:
+    """Replace a skill while carrying its private in-skill knowledge forward."""
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    temporary = Path(tempfile.mkdtemp(prefix=f".{SKILL_NAME}-install-", dir=destination.parent))
+    staging = temporary / SKILL_NAME
+    try:
+        shutil.copytree(
+            source,
+            staging,
+            ignore=shutil.ignore_patterns(
+                ".DS_Store", "__pycache__", "*.pyc", ".private"
+            ),
+        )
+
+        if destination.is_dir() and not destination.is_symlink():
+            private = destination / "references" / ".private"
+            if private.exists():
+                if private.is_symlink() or not private.is_dir():
+                    raise RuntimeError(
+                        f"refusing to replace unsupported private resource: {private}"
+                    )
+                preserved = staging / "references" / ".private"
+                preserved.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copytree(private, preserved)
+
+        if destination.exists() or destination.is_symlink():
+            remove_existing(destination)
+        shutil.move(str(staging), str(destination))
+    finally:
+        shutil.rmtree(temporary, ignore_errors=True)
+
+
 def install(args: argparse.Namespace) -> int:
     try:
         destinations = target_directories(args)
@@ -106,14 +139,11 @@ def install(args: argparse.Namespace) -> int:
         print(f"{action} {source.name} -> {destination}")
         if args.dry_run:
             continue
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        if destination.exists() or destination.is_symlink():
-            remove_existing(destination)
-        shutil.copytree(
-            source,
-            destination,
-            ignore=shutil.ignore_patterns(".DS_Store", "__pycache__", "*.pyc"),
-        )
+        try:
+            install_one(source, destination)
+        except (OSError, RuntimeError) as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 1
 
     if not args.dry_run:
         print(f"installed {len(operations)} skill director{'y' if len(operations) == 1 else 'ies'}")

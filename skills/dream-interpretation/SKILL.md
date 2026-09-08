@@ -22,7 +22,7 @@ description: 用于解读梦境、查询传统梦兆、综合本地扩展资料�
 
 ## 检索传统条目
 
-实际解梦先读 [01-interpretation-method.md](references/01-interpretation-method.md)。涉及完整事件链、状态反转、梦者与他人的关系，或使用本地扩展资料时，再读 [03-menglin-method.md](references/03-menglin-method.md)。不要一次加载整部辞典或整份扩展文本。
+实际解梦先读 [01-interpretation-method.md](references/01-interpretation-method.md)。涉及完整事件链、状态反转、梦者与他人的关系，或使用已内化的扩展知识时，再读 [03-menglin-method.md](references/03-menglin-method.md)。不要一次加载整部辞典或整份扩展文本。
 
 先查随 Skill 打包的古典辞典：
 
@@ -32,26 +32,26 @@ python3 scripts/search_dreams.py --query "梦境的核心场景" --max-results 8
 
 可用 `--category` 限定门类，用 `--list-categories` 查看全部门类。脚本不可用时，再用 `rg` 在 [classical-dictionary.txt](references/classical-dictionary.txt) 中检索核心名词和动作。
 
-然后检查私有本地扩展索引：
+然后检查当前 Skill 内部的私有完整知识资源：
 
 ```bash
 python3 scripts/search_menglin.py --status
 python3 scripts/search_menglin.py --query "对象 + 动作 + 状态" --max-results 6
 ```
 
-若索引存在，完整梦境默认同时查两个资料通道；简单符号查询可在内置辞典已有精确条目时停止扩查。若本地索引缺失，不得声称已搜索扩展资料；索引构建和内部路由见 [05-source-registry.md](references/05-source-registry.md) 与 [04-menglin-catalog.md](references/04-menglin-catalog.md)。
+若内部资源存在且完整性校验通过，完整梦境默认同时查两个知识通道；简单符号查询可在内置辞典已有精确条目时停止扩查。运行时只读当前 Skill 内的资源，不依赖原始文件或 Skill 外部的索引。若内部资源缺失或校验失败，不得声称已使用完整扩展知识；内化和检索路由见 [05-source-registry.md](references/05-source-registry.md) 与 [04-menglin-catalog.md](references/04-menglin-catalog.md)。
 
 检索结果按以下证据次序使用：
 
 1. 对象、动作、状态、方向与结果都吻合的原条目；
 2. 对象和关键动作吻合、但少一个限定条件的近似条目；
 3. 只有同类对象或相似场景的类比；
-4. 只在本地扩展资料中定位的近似内容；
+4. 只在 Skill 内部完整知识中命中的近似内容；
 5. 两个资料通道都无对应时，明确写“无直接条目”，只做语境分析。
 
 具体动作与状态优先于孤立名词。同一对象的清浊、完整破损、进入离开、生死和梦者角色可能对应相反条目，不按“吉词多还是凶词多”投票。多个梦象按梦里的主事件链组合，先判断哪个情节推动了结局，其余只作支持或限制。
 
-检索结果带 `source_warning`，或原句明显缺字、粘连、古今词义不明时，读 [02-source-notes.md](references/02-source-notes.md)。扩展资料的检索命中必须在内部保留原始定位；决定结论的原句先在源材料中核对。未核对时只能概括为“文本未完全校清”，不加引号。任何来源都不得凭印象补字后冒充原文。
+命中文本明显缺字、粘连、古今词义不明时，读 [02-source-notes.md](references/02-source-notes.md)。此时只能概括为“文本未完全校清”，不加引号。任何知识通道都不得凭印象补字后冒充原文。
 
 两个资料通道出现相反条目时，在内部分别记录来源与限定条件，不按数量投票；对用户只说“传统资料存在冲突”并解释条件差异。文本重复不算独立佐证；具体处理见 [03-menglin-method.md](references/03-menglin-method.md)。
 
