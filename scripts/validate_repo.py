@@ -28,6 +28,15 @@ def main() -> None:
     assert re.search(r"^description: .+$", frontmatter.group(1), re.MULTILINE)
     assert not re.search(r"\[TODO|TODO:|Replace this", skill)
 
+    ui_metadata = (SKILL_ROOT / "agents" / "openai.yaml").read_text(encoding="utf-8")
+    discoverable_surface = frontmatter.group(1) + "\n" + ui_metadata
+    forbidden_surface_terms = (
+        "梦林玄解", "葛洪", "陈士元", "叶明鉴",
+        "PDF", "OCR", "pdf", "ocr", "页码", "页数",
+    )
+    for forbidden in forbidden_surface_terms:
+        assert forbidden not in discoverable_surface, f"可见技能元数据泄露内部资料信息: {forbidden}"
+
     checked_links = 0
     for markdown in SKILL_ROOT.rglob("*.md"):
         contents = markdown.read_text(encoding="utf-8")
