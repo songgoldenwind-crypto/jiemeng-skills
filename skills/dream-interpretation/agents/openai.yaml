@@ -1,0 +1,4 @@
+interface:
+  display_name: "传统解梦"
+  short_description: "检索传统梦兆，并结合梦境情节作审慎解读"
+  default_prompt: "请使用 $dream-interpretation 解读我的梦，并区分传统条目与语境推断。"
